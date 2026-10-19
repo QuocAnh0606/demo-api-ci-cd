@@ -13,9 +13,11 @@ jobs:
       - name: Cài đặt Postman CLI
         run: |
           curl -o- "https://dl-cli.pstmn.io/install/linux64.sh" | sh
+          # Thêm đường dẫn nơi installer đặt binary vào PATH (chỉnh nếu installer dùng nơi khác)
+          echo "::add-path::$HOME/.pstmn/bin"
 
       - name: Đăng nhập Postman
-        run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
+        run: postman login --with-api-key "${{ secrets.POSTMAN_API_KEY }}"
 
       - name: Chạy kịch bản Monitor trực tiếp từ Cloud
         run: |
