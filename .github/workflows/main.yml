@@ -1,20 +1,34 @@
 name: Restful-Booker CI Pipeline
-on: [push, pull_request]
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   api-testing:
     runs-on: ubuntu-latest
     steps:
-      - name: 1. Checkout mã nguồn
+      - name: 1. Lấy code
         uses: actions/checkout@v4
 
-      - name: 2. Cài đặt Node.js
+      - name: 2. Cài Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
 
-      - name: 3. Cài đặt công cụ Newman (Postman CLI)
+      - name: 3. Cài Newman
         run: npm install -g newman
 
       - name: 4. Chạy bộ Test tự động
-        run: newman run RestfulBooker_API_Collection.postman_collection.json -e RestfulBooker_Env.postman_environment.json -d booking_data.csv
+        run: |
+          echo "=== File trong repo ==="
+          ls -la
+          COLLECTION=$(find . -name "*.postman_collection.json" | head -n 1)
+          ENVFILE=$(find . -name "*.postman_environment.json" | head -n 1)
+          DATA=$(find . -name "booking_data.csv" | head -n 1)
+          echo "Collection: $COLLECTION"
+          echo "Environment: $ENVFILE"
+          echo "Data: $DATA"
+          newman run "$COLLECTION" -e "$ENVFILE" -d "$DATA"
