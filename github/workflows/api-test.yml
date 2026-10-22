@@ -1,33 +1,55 @@
-name: ReqRes API Test
+name: Restful-Booker CI Pipeline
+
 on:
   push:
-    branches: [main]
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   api-testing:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: 1. Lấy code
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: 2. Cài Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
 
-      - name: Install Newman
-        run: npm install -g newman newman-reporter-htmlextra
+      - name: 3. Cài Newman
+        run: npm install -g newman
 
-      - name: Run tests
+      - name: 4. Chạy bộ Test tự động
         run: |
-          newman run ReqRes_Collection.json \
-            -e ReqRes_Environment.json \
-            -d users.csv \
-            --env-var "api_key=${{ secrets.REQRES_API_KEY }}" \
-            --reporters cli,htmlextra \
-            --reporter-htmlextra-export report.html
+          echo "=== File trong repo ==="
+          ls -la
 
-      - name: Upload report
+          COLLECTION=$(find . -name "*.postman_collection.json" | head -n 1)
+          ENVFILE=$(find . -name "*.postman_environment.json" | head -n 1)
+          DATA=$(find . -name "booking_data.csv" | head -n 1)
+          USERDATA=$(find . -name "user.csv" | head -n 1)
+
+          echo "Collection: $COLLECTION"
+          echo "Environment: $ENVFILE"
+          echo "Data: $DATA"
+          echo "User Data: $USERDATA"
+
+          if [ -z "$COLLECTION" ] || [ -z "$ENVFILE" ] || [ -z "$DATA" ]; then
+            echo "Thiếu file collection, environment hoặc booking_data.csv"
+            exit 1
+          fi
+
+          newman run "$COLLECTION" \
+            -e "$ENVFILE" \
+            -d "$DATA" \
+            --reporters cli,html \
+            --reporter-html-export report.html
+
+      - name: 5. Upload HTML report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: newman-report
+          name: newman-html-report
           path: report.html
