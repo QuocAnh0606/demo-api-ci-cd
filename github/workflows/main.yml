@@ -18,8 +18,10 @@ jobs:
         with:
           node-version: '20'
 
-      - name: 3. Cài Newman
-        run: npm install -g newman
+      - name: 3. Cài Newman và HTML reporter
+        run: |
+          npm install -g newman
+          npm install -g newman-reporter-htmlextra
 
       - name: 4. Chạy bộ Test tự động
         run: |
@@ -48,8 +50,21 @@ jobs:
             exit 1
           fi
 
+          mkdir -p newman
+
           echo "Collection: $COLLECTION"
           echo "Environment: $ENVFILE"
           echo "Data: $DATA"
 
-          newman run "$COLLECTION" -e "$ENVFILE" -d "$DATA"
+          newman run "$COLLECTION" \
+            -e "$ENVFILE" \
+            -d "$DATA" \
+            --reporters cli,htmlextra \
+            --reporter-htmlextra-export ./newman/report.html
+
+      - name: 5. Upload report HTML
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: newman-html-report
+          path: ./newman/report.html
