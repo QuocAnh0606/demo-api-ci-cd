@@ -1,30 +1,30 @@
-name: Restful-Booker CI Pipeline
+name: ReqRes API CI Pipeline
 on: [push, pull_request]
 
 jobs:
   api-testing:
     runs-on: ubuntu-latest
     steps:
-      - name: 1. Checkout mã nguồn
+      - name: 1. Checkout source code
         uses: actions/checkout@v4
 
-      - name: 2. Cài đặt Node.js
+      - name: 2. Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
 
-      - name: 3. Cài đặt Newman và htmlextra reporter
+      - name: 3. Install Newman and HTML reporter
         run: npm install -g newman newman-reporter-htmlextra
 
-      - name: 4. Chạy bộ Test tự động
+      - name: 4. Run automated tests
         run: |
-          newman run RestfulBooker_API_Collection.postman_collection.json \
-            -e RestfulBooker_Env.postman_environment.json \
-            -d booking_data.csv \
+          newman run 2474802010010_NguyenHuynhQuocAnh_ReqRes.postman_collection.json \
+            -e 2474802010010_NguyenHuynhQuocAnh_ReqRes_Env.postman_environment.json \
+            -d users.csv \
             --reporters cli,htmlextra \
             --reporter-htmlextra-export report.html
 
-      - name: 5. Upload report
+      - name: 5. Upload test report
         if: always()
         uses: actions/upload-artifact@v4
         with:
