@@ -1,36 +1,47 @@
-name: ReqRes API CI Pipeline
-on: [push, pull_request]
+name: Restful-Booker CI Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   api-testing:
     runs-on: ubuntu-latest
     steps:
-      - name: 1. Checkout source code
+      - name: 1. Lấy code
         uses: actions/checkout@v4
 
-      - name: 2. Setup Node.js
+      - name: 2. Cài Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
 
-      - name: 3. Install Newman and HTML reporter
-        run: npm install -g newman newman-reporter-htmlextra
+      - name: 3. Cài Newman
+        run: npm install -g newman
 
-      - name: 4. Run automated tests
+      - name: 4. Chạy bộ Test tự động
+        shell: bash
         run: |
-          newman run 2474802010010_NguyenHuynhQuocAnh_ReqRes.postman_collection.json \
-            -e 2474802010010_NguyenHuynhQuocAnh_ReqRes_Env.postman_environment.json \
-            --env-var "baseUrl=https://reqres.in" \
-            --env-var "userId=2" \
-            --env-var "api_key=reqres-demo-key" \
-            --env-var "userToken=demo-token" \
-            -d users.csv \
-            --reporters cli,htmlextra \
-            --reporter-htmlextra-export report.html
+          set -euo pipefail
 
-      - name: 5. Upload test report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: newman-report
-          path: report.html
+          COLLECTION="./RestfulBooker_API_Collection.postman_collection.json"
+          ENVFILE="./RestfulBooker_Env.postman_environment.json"
+          DATA="./booking_data.csv"
+
+          echo "=== Kiểm tra file ==="
+          ls -la
+
+          for f in "$COLLECTION" "$ENVFILE" "$DATA"; do
+            if [ ! -f "$f" ]; then
+              echo "Missing file: $f"
+              exit 1
+            fi
+          done
+
+          echo "Collection: $COLLECTION"
+          echo "Environment: $ENVFILE"
+          echo "Data: $DATA"
+
+          newman run "$COLLECTION" -e "$ENVFILE" -d "$DATA" --reporters cli
