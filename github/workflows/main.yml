@@ -20,6 +20,10 @@ jobs:
         run: |
           newman run 2474802010010_NguyenHuynhQuocAnh_ReqRes.postman_collection.json \
             -e 2474802010010_NguyenHuynhQuocAnh_ReqRes_Env.postman_environment.json \
+            --env-var "baseUrl=https://reqres.in" \
+            --env-var "userId=2" \
+            --env-var "api_key=reqres-demo-key" \
+            --env-var "userToken=demo-token" \
             -d users.csv \
             --reporters cli,htmlextra \
             --reporter-htmlextra-export report.html
