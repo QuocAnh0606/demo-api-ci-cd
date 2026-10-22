@@ -22,37 +22,34 @@ jobs:
         run: npm install -g newman
 
       - name: 4. Chạy bộ Test tự động
-        shell: bash
         run: |
-          set -euo pipefail
+          echo "=== File trong repo ==="
+          ls -la
 
           COLLECTION="./RestfulBooker_API_Collection.postman_collection.json"
           ENVFILE="./RestfulBooker_Env.postman_environment.json"
           DATA="./booking_data.csv"
 
-          echo "=== Kiểm tra file ==="
-          ls -la
+          if [ ! -f "$COLLECTION" ]; then
+            echo "Missing collection file: $COLLECTION"
+            find . -maxdepth 2 -type f | sort
+            exit 1
+          fi
 
-          for f in "$COLLECTION" "$ENVFILE" "$DATA"; do
-            if [ ! -f "$f" ]; then
-              echo "Missing file: $f"
-              exit 1
-            fi
-          done
+          if [ ! -f "$ENVFILE" ]; then
+            echo "Missing environment file: $ENVFILE"
+            find . -maxdepth 2 -type f | sort
+            exit 1
+          fi
+
+          if [ ! -f "$DATA" ]; then
+            echo "Missing data file: $DATA"
+            find . -maxdepth 2 -type f | sort
+            exit 1
+          fi
 
           echo "Collection: $COLLECTION"
           echo "Environment: $ENVFILE"
           echo "Data: $DATA"
 
-          newman run "$COLLECTION" \
-            -e "$ENVFILE" \
-            -d "$DATA" \
-            --reporters cli,html \
-            --reporter-html-export report.html
-
-      - name: 5. Upload HTML report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: newman-html-report
-          path: report.html
+          newman run "$COLLECTION" -e "$ENVFILE" -d "$DATA"
